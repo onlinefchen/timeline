@@ -1,7 +1,7 @@
 ### kswpad
 
 #### when to wake up kswapd  
-![kswapd]（https://github.com/puckchen/picture/blob/master/kswapd-wakeup.jpg）
+![kswapd](https://github.com/puckchen/picture/blob/master/kswapd-wakeup.jpg)
 #### where to over kswapd  
 
 #### the algorithm of kswapd  
