@@ -1,0 +1,26 @@
+From 8b0226f09b6b78253b748deb597f1a93a2874388 Mon Sep 17 00:00:00 2001
+From: Chen Feng <puck.chen@foxmail.com>
+Date: Sun, 28 Aug 2016 00:13:57 +0800
+Subject: [PATCH] change picture
+
+change picture
+---
+ kswapd.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kswapd.md b/kswapd.md
+index 59d974f..07e0e1e 100644
+--- a/kswapd.md
++++ b/kswapd.md
+@@ -1,7 +1,7 @@
+ ### kswpad
+ 
+ #### when to wake up kswapd  
+-![kswapd]（https://github.com/puckchen/picture/blob/master/kswapd-wakeup.jpg）
++![kswapd](https://github.com/puckchen/picture/blob/master/kswapd-wakeup.jpg)
+ #### where to over kswapd  
+ 
+ #### the algorithm of kswapd  
+-- 
+1.9.1
+
