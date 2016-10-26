@@ -74,7 +74,25 @@ static inline void expand(struct zone *zone, struct page *page,
 ```
 #### 2. 页的合并 
 
-页面的代码看起来比较复杂，主要是这里用了一些编程技巧
+页面的代码看起来比较复杂，主要是这里用了一些编程技巧  
+buddy的合并算法是:   
+. 两个内存块具有相同的大小A  
+. 两个内存块的物理地址连续  
+. 两个内存块，靠前的一个物理地址是 2 x A x 2^12   
+```
++--------+  +---------+
+|   A    |  |   A     |
++----+---+  +----+----+
+     |           |
++----v-----------v----+   +--------------------+
+|        2A           |   |       2A           |
++-------------+-------+   +-------+------------+
+              |                   |
++-------------v-------------------v------------+
+|                   4A                         |
++----------------------------------------------+
+```
+即为在一个4M的范围内，将内存尽量可能的合并，直到4M（2^10 x 4k）为止.  
 
 1. page_idx与buddy_idx   
 
@@ -85,27 +103,22 @@ pfn号与上1<< MAX_ORDER - 1，即相当于把所有的PFN与2的10次方做一
 那么这4MB里边page_idx对应的可以合并的兄弟如何计算  
 buddy_idx = page_idx ^ (1 << order)   
 相当于page_idx的各个位置取反，因为一共有0 ~ 1 << order - 1 个idx  
-例如:  
-110的兄弟页是001  
-这样两头的合并往中间靠拢
-最后两个合并成一个大单位4M
-可以理解成  22位
-0000000000000000000000  
+对应的order所对于的page_idx和buddy_idx是已经固定的了，这里只需要找到相应order的那一位
+将其去反即可
+图例例如:  
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+  2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+   3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+     5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+即可以合并的页的位置已经固定，查找到后，需要满足如下的条件
+. 两个内存块具有相同的大小A  
+. 两个内存块的物理地址连续  
+. 两个内存块，靠前的一个物理地址是 2 x A x 2^12 
+```  
 
-0000000000000000000001 	1111111111111111111110  
-
-
-左边11和右边11个对齐互为buddy
-
-则第一个
-```
-
-2. merge   
-
-
-
-
-
+2 . merge   
 ```
 static inline void __free_one_page(struct page *page,
 		unsigned long pfn,
@@ -128,14 +141,20 @@ static inline void __free_one_page(struct page *page,
 		__mod_zone_freepage_state(zone, 1 << order, migratetype);
 
 	page_idx = pfn & ((1 << MAX_ORDER) - 1);
+   	获取在相应4M中的index
 
 	VM_BUG_ON_PAGE(page_idx & ((1 << order) - 1), page);
 	VM_BUG_ON_PAGE(bad_range(zone, page), page);
 
 continue_merging:
 	while (order < max_order - 1) {
+    	直到4M为止
 		buddy_idx = __find_buddy_index(page_idx, order);
+        获取相应order对于的兄弟内存块的index
+        
 		buddy = page + (buddy_idx - page_idx);
+        获取对应兄弟块的page地址
+        
 		if (!page_is_buddy(page, buddy, order))
 			goto done_merging;
 		/*
@@ -147,12 +166,14 @@ continue_merging:
 		} else {
 			list_del(&buddy->lru);
 			zone->free_area[order].nr_free--;
+            将兄弟块从相应的order删除。
 			rmv_page_order(buddy);
 		}
 		combined_idx = buddy_idx & page_idx;
 		page = page + (combined_idx - page_idx);
 		page_idx = combined_idx;
 		order++;
+        order升一个阶梯
 	}
 	if (max_order < MAX_ORDER) {
 		/* If we are here, it means order is >= pageblock_order.
@@ -163,6 +184,7 @@ continue_merging:
 		 * We don't want to hit this code for the more frequent
 		 * low-order merging.
 		 */
+         看是否可以继续merge
 		if (unlikely(has_isolate_pageblock(zone))) {
 			int buddy_mt;
 
@@ -193,7 +215,11 @@ done_merging:
 	if ((order < MAX_ORDER-2) && pfn_valid_within(page_to_pfn(buddy))) {
 		struct page *higher_page, *higher_buddy;
 		combined_idx = buddy_idx & page_idx;
+        获取对应的合并后的index
+        
 		higher_page = page + (combined_idx - page_idx);
+        获取合并后的块的index
+        
 		buddy_idx = __find_buddy_index(combined_idx, order + 1);
 		higher_buddy = higher_page + (buddy_idx - combined_idx);
 		if (page_is_buddy(higher_page, higher_buddy, order + 1)) {
