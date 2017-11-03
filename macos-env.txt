@@ -31,6 +31,7 @@ brew install screen
 brew install watch
 brew install wdiff --with-gettext
 brew install wget
+brew install bash-completion
 
 
 sudo cp elf.h /usr/local/include/
@@ -48,3 +49,7 @@ export GREP_OPTIONS='--color=always'
 alias la="ls -al --color=auto"
 alias ls="ls --color=auto"
 alias code="cd ~/code"
+
+if [ -f $(brew --prefix)/etc/bash_completion ]; then
+   . $(brew --prefix)/etc/bash_completion
+fi
