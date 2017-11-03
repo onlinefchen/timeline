@@ -1,0 +1,50 @@
+brew install bash
+brew install emacs
+brew install gdb  # gdb requires further actions to make it work. See `brew info gdb`.
+brew install gpatch
+brew install m4
+brew install make
+brew install nano
+brew install file-formula
+brew install git
+brew install less
+brew install openssh
+brew install python
+brew install rsync
+brew install svn
+brew install unzip
+brew install vim --override-system-vi
+brew install zsh
+brew install binutils
+brew install diffutils
+brew install ed --default-names
+brew install findutils --with-default-names
+brew install gawk
+brew install gnu-indent --with-default-names
+brew install gnu-sed --with-default-names
+brew install gnu-tar --with-default-names
+brew install gnu-which --with-default-names
+brew install gnutls
+brew install grep --with-default-names
+brew install gzip
+brew install screen
+brew install watch
+brew install wdiff --with-gettext
+brew install wget
+
+
+sudo cp elf.h /usr/local/include/
+
+
+
+PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+PATH="~/bin:/Users/puck/code/bin/AARCH64-TOOLCHAIN/bin:$PATH"
+export LIBRARY_PATH="/usr/local/opt/gettext/lib:$LIBRARY_PATH";
+export PKG_CONFIG_PATH="/usr/local/opt/ncurses/lib/pkgconfig:$PKG_CONFIG_PATH"
+export CPATH="/usr/local/opt/gettext/include:$CPATH";
+export GREP_OPTIONS='--color=always'
+
+alias la="ls -al --color=auto"
+alias ls="ls --color=auto"
+alias code="cd ~/code"
